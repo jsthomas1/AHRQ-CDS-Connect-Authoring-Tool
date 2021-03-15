@@ -10,7 +10,9 @@
 // - 1.3.3
 //   - Add functions for the Immunization resource
 //   - Add functions for the Device resource
-library AT_Internal_CDS_Connect_Commons_for_FHIRv102 version '1.3.3'
+// - 1.3.4
+//   - Add functions for First {Observation, Condition, Procedure, Immunization}
+library AT_Internal_CDS_Connect_Commons_for_FHIRv102 version '1.3.4'
 
 using FHIR version '1.0.2'
 
@@ -74,6 +76,17 @@ define function MostRecent(ObsList List<Observation>):
   Last(ObsList O sort by Coalesce(effectiveDateTime.value, effectivePeriod."end".value, effectivePeriod."start".value, issued.value))
 
 /**
+ * The First Observation.  For each Observation, this algorithm will use the FindDate function, which uses the
+ * first non-null date value from these fields: effectiveDateTime, effectivePeriod.end, effectivePeriod.start, issued.
+ * The found date will be used to compare Observations and determine the first one.
+ * @see FindDate(Observation)
+ * @param ObsList - a list of Observations
+ * @returns {Observation} the most recent Observation from the list, or null if null was passed in
+ */
+ define function First(OBSList List<Observation>):
+  First(ObsList O sort by Coalesce(effectiveDateTime.value, effectivePeriod."end".value, effectivePeriod."start".value, issued.value))
+
+/**
  * Extracts the quantity value from an Observation, returning it as a CQL Quantity
  * @param Obs - an observation
  * @returns {System.Quantity} the Observation's value as a quantity, or null if there is no quantity value
@@ -108,6 +121,15 @@ define function FindDate(Obs Observation):
 define function HighestObservation(ObsList List<Observation>):
   Max(ObsList O return FHIRHelpers.ToQuantity(O.valueQuantity))
 
+/**
+ * The highest observation.
+ * The value will be used to compare Observations and determine the highest one.
+ * @param ObsList - a list of Observations
+ * @returns {System.Quantity} a quantity containing the average of the non-null elements of the list
+ * or null if all elements are null.
+ */
+define function AverageObservation(ObsList List<Observation>):
+  Avg(ObsList O return FHIRHelpers.ToQuantity(O.valueQuantity)
 
 // -------------------------------------------------- CONDITIONS -------------------------------------------------------
 
@@ -183,6 +205,16 @@ define function ConditionLookBack(CondList List<Condition>, LookBack System.Quan
 define function MostRecentCondition(CondList List<Condition>):
   Last(CondList C sort by Coalesce(onsetDateTime.value, onsetPeriod."end".value, onsetPeriod."start".value, dateRecorded.value))
 
+/**
+ * The First condition.  For each Condition, this algorithm will use the Coalesce function, which uses the
+ * first non-null result from these fields: onsetDateTime, onsetPeriod.end, onsetPeriod.start, dateRecorded.
+ * The found date will be used to compare Conditions and determine the most recent one.
+ * @param CondList - a list of Conditions
+ * @returns {Condition} the most recent Condition from the list, or null if null was passed in
+ */
+define function FirstCondition(CondList List<Condition>):
+  First(CondList C sort by Coalesce(onsetDateTime.value, onsetPeriod."end".value, onsetPeriod."start".value, dateRecorded.value))
+
 // -------------------------------------------------- PROCEDURES -------------------------------------------------------
 
  /**
@@ -254,6 +286,16 @@ define function ProcedureLookBack(ProcList List<Procedure>, LookBack System.Quan
  */
 define function MostRecentProcedure(ProcList List<Procedure>):
   Last(ProcList P sort by Coalesce(performedDateTime.value, performedPeriod."end".value, performedPeriod."start".value))
+
+/**
+ * The First procedure.  For each Procedure, this algorithm will use the Coalesce function, which returns the
+ * first non-null result from these fields: performedDateTime, performedPeriod.end, performedPeriod.start.
+ * The found date will be used to compare Procedures and determine the first one.
+ * @param ProcList - a list of Procedures
+ * @returns {Procedure} the most recent Procedure from the list, or null if null was passed in
+ */
+define function FirstProcedure(ProcList List<Procedure>):
+  Fast(ProcList P sort by Coalesce(performedDateTime.value, performedPeriod."end".value, performedPeriod."start".value))
 
 
 // ---------------------------------------------- PROCEDUREREQUESTS ----------------------------------------------------
@@ -537,6 +579,15 @@ define function ImmunizationLookBack(ImmunizationList List<Immunization>, LookBa
  */
 define function MostRecentImmunization(ImmunizationList List<Immunization>):
   Last(ImmunizationList I sort by date.value)
+
+/**
+ * The First Immunization.
+ * @param ImmunizationList - a list of Immunizations
+ * @returns {Immunization} the most recent Immunization from the list, or null if null was passed in
+ */
+define function FirstImmunization(ImmunizationList List<Immunization>):
+  First(ImmunizationList I sort by date.value)
+
 
 // ----------------------------------------------------- Devices -------------------------------------------------------
 
