@@ -12,6 +12,7 @@
 //   - Add functions for the Device resource
 // - 1.3.4
 //   - Add functions for First {Observation, Condition, Procedure, Immunization}
+//   - Add functions for Average Observation
 library AT_Internal_CDS_Connect_Commons_for_FHIRv102 version '1.3.4'
 
 using FHIR version '1.0.2'

@@ -7,7 +7,8 @@
 //   - Add functions for the Immunization resource
 //   - Add functions for the Device resource
 // - 1.0.3
-//   - Add functions for First {Observation, Procedure, Condition, Immunization}
+//   - Add functions for First {Observation, Condition, Procedure, Immunization}
+//   - Add functions for Average Observation
 library AT_Internal_CDS_Connect_Commons_for_FHIRv300 version '1.0.3'
 
 using FHIR version '3.0.0'

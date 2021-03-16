@@ -35,7 +35,7 @@ export function setStatusMessage(statusType) {
 function parseTree(element, names, baseElementsInUse, parametersInUse, librariesInUse) {
   parseConjunction(element.childInstances, names, baseElementsInUse, parametersInUse, librariesInUse);
   const children = element.childInstances;
-  children.forEach((child) => {
+  children.forEach(child => {
     if ('childInstances' in child) {
       parseTree(child, names, baseElementsInUse, parametersInUse, librariesInUse);
     }
@@ -43,7 +43,7 @@ function parseTree(element, names, baseElementsInUse, parametersInUse, libraries
 }
 
 function parseConjunction(childInstances, names, baseElementsInUse, parametersInUse, librariesInUse) {
-  childInstances.forEach((child) => {
+  childInstances.forEach(child => {
     // Add name of child to array
     const index = names.findIndex(name => name.id === child.uniqueId);
     if (index === -1) {
@@ -83,7 +83,7 @@ function parseConjunction(childInstances, names, baseElementsInUse, parametersIn
     }
 
     if (child.modifiers) {
-      child.modifiers.forEach((modifier) => {
+      child.modifiers.forEach(modifier => {
         if (modifier.type === 'ExternalModifier') {
           const libraryAlreadyInUse = librariesInUse.find(l => l === modifier.libraryName);
           if (libraryAlreadyInUse === undefined) {
@@ -111,15 +111,16 @@ function parseForDuplicateNamesAndUsed(artifact) {
   if (artifact.expTreeExclude.childInstances.length) {
     parseTree(artifact.expTreeExclude, names, baseElementsInUse, parametersInUse, librariesInUse);
   }
-  artifact.subpopulations.forEach((subpopulation) => {
+  artifact.subpopulations.forEach(subpopulation => {
     names.push({ name: subpopulation.subpopulationName, id: subpopulation.uniqueId });
-    if (!subpopulation.special) { // `Doesn't Meet Inclusion Criteria` and `Meets Exclusion Criteria` are special
+    if (!subpopulation.special) {
+      // `Doesn't Meet Inclusion Criteria` and `Meets Exclusion Criteria` are special
       if (subpopulation.childInstances.length) {
         parseTree(subpopulation, names, baseElementsInUse, parametersInUse, librariesInUse);
       }
     }
   });
-  artifact.baseElements.forEach((baseElement) => {
+  artifact.baseElements.forEach(baseElement => {
     const nameField = getFieldWithId(baseElement.fields, 'element_name');
     if (nameField) {
       names.push({ name: nameField.value, id: baseElement.uniqueId });
@@ -131,14 +132,14 @@ function parseForDuplicateNamesAndUsed(artifact) {
       parseConjunction([baseElement], names, baseElementsInUse, parametersInUse, librariesInUse);
     }
   });
-  artifact.parameters.forEach((parameter) => {
+  artifact.parameters.forEach(parameter => {
     names.push({ name: parameter.name, id: parameter.uniqueId });
   });
   return { names, baseElementsInUse, parametersInUse, librariesInUse };
 }
 
 export function updateArtifact(artifactToUpdate, props) {
-  return (dispatch) => {
+  return dispatch => {
     const artifact = {
       ...artifactToUpdate,
       ...props
@@ -146,13 +147,13 @@ export function updateArtifact(artifactToUpdate, props) {
     const { names, baseElementsInUse, parametersInUse, librariesInUse } = parseForDuplicateNamesAndUsed(artifact);
 
     // Add uniqueId to list on base element to mark where it is used.
-    artifact.baseElements.forEach((element) => {
+    artifact.baseElements.forEach(element => {
       const elementInUse = baseElementsInUse.find(usedBaseEl => usedBaseEl.baseElementId === element.uniqueId);
       element.usedBy = elementInUse ? elementInUse.usedBy : [];
     });
 
     // Add uniqueId to list on parameter to mark where it is used.
-    artifact.parameters.forEach((parameter) => {
+    artifact.parameters.forEach(parameter => {
       const parameterInUse = parametersInUse.find(usedParameter => usedParameter.parameterId === parameter.uniqueId);
       parameter.usedBy = parameterInUse ? parameterInUse.usedBy : [];
     });
@@ -167,7 +168,7 @@ export function updateArtifact(artifactToUpdate, props) {
 }
 
 export function updateAndSaveArtifact(artifactToUpdate, props) {
-  return (dispatch) => {
+  return dispatch => {
     const artifact = {
       ...artifactToUpdate,
       ...props
@@ -266,14 +267,15 @@ function loadArtifactsFailure(error) {
 
 function sendArtifactsRequest() {
   return new Promise((resolve, reject) => {
-    axios.get(`${API_BASE}/artifacts`)
+    axios
+      .get(`${API_BASE}/artifacts`)
       .then(result => resolve(result.data))
       .catch(error => reject(error));
   });
 }
 
 export function loadArtifacts() {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(requestArtifacts());
 
     return sendArtifactsRequest()
@@ -311,14 +313,15 @@ function loadArtifactFailure(error) {
 
 function sendArtifactRequest(id) {
   return new Promise((resolve, reject) => {
-    axios.get(`${API_BASE}/artifacts/${id}`)
+    axios
+      .get(`${API_BASE}/artifacts/${id}`)
       .then(result => resolve(result.data[0]))
       .catch(error => reject(error));
   });
 }
 
 export function loadArtifact(id) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(requestArtifact(id));
 
     return sendArtifactRequest(id)
@@ -344,7 +347,7 @@ function requestValidateArtifact() {
 
 function downloadArtifactSuccess() {
   return {
-    type: types.DOWNLOAD_ARTIFACT_SUCCESS,
+    type: types.DOWNLOAD_ARTIFACT_SUCCESS
   };
 }
 
@@ -376,8 +379,12 @@ function sendDownloadArtifactRequest(artifact, dataModel) {
   const fileName = changeToCase(`${artifact.name}-v${artifact.version}-cql`, 'snakeCase');
 
   return new Promise((resolve, reject) => {
-    axios.post(`${API_BASE}/cql`, artifact, { responseType: 'blob' })
-      .then((result) => { FileSaver.saveAs(result.data, `${fileName}.zip`); resolve(result.data); })
+    axios
+      .post(`${API_BASE}/cql`, artifact, { responseType: 'blob' })
+      .then(result => {
+        FileSaver.saveAs(result.data, `${fileName}.zip`);
+        resolve(result.data);
+      })
       .catch(error => reject(error));
   });
 }
@@ -399,21 +406,20 @@ function sendValidateArtifactRequest(artifact) {
 }
 
 export function downloadArtifact(artifact, dataModel) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(requestDownloadArtifact());
 
     return sendDownloadArtifactRequest(artifact, dataModel)
       .then(() => {
         dispatch(downloadArtifactSuccess());
-        sendValidateArtifactRequest(artifact)
-          .then(res => dispatch(validateArtifactSuccess(res.data)));
+        sendValidateArtifactRequest(artifact).then(res => dispatch(validateArtifactSuccess(res.data)));
       })
       .catch(error => dispatch(downloadArtifactFailure(error)));
   };
 }
 
 export function validateArtifact(artifact) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(requestValidateArtifact());
 
     return sendValidateArtifactRequest(artifact)
@@ -442,9 +448,11 @@ function executeArtifactSuccess(data, artifact, patients) {
 function executeArtifactFailure(error) {
   let errorMessage;
   if (error.response && error.response.status === 404) {
-    errorMessage = 'Unable to retrieve codes for a value set in this artifact. This is a known issue with'
-    + ' intensional value sets that will be resolved in an upcoming release';
+    errorMessage =
+      'Unable to retrieve codes for a value set in this artifact. This is a known issue with' +
+      ' intensional value sets that will be resolved in an upcoming release';
   }
+
   return {
     type: types.EXECUTE_ARTIFACT_FAILURE,
     status: error.response ? error.response.status : '',
@@ -454,10 +462,15 @@ function executeArtifactFailure(error) {
 
 function performExecuteArtifact(elmFiles, artifactName, params, patients, vsacApiKey, codeService, dataModel) {
   // Set up the library
-  const elmFile = JSON.parse(_.find(elmFiles, f =>
-    f.name.replace(/[\s-\\/]/g, '') === artifactName.replace(/[\s-\\/]/g, '')).content);
-  const libraries = _.filter(elmFiles, f =>
-    f.name.replace(/[\s-\\/]/g, '') !== artifactName.replace(/[\s-\\/]/g, '')).map(f => JSON.parse(f.content));
+  console.log(elmFiles.map(elm => elm.name));
+  console.log(artifactName);
+  const elmFile = JSON.parse(
+    _.find(elmFiles, f => f.name.replace(/[\s-\\/]/g, '') === artifactName.replace(/[\s-\\/]/g, '')).content
+  );
+  const libraries = _.filter(
+    elmFiles,
+    f => f.name.replace(/[\s-\\/]/g, '') !== artifactName.replace(/[\s-\\/]/g, '')
+  ).map(f => JSON.parse(f.content));
   const library = new cql.Library(elmFile, new cql.Repository(libraries));
   // Set up the parameters
   const cqlExecParams = convertParameters(params);
@@ -482,18 +495,17 @@ function performExecuteArtifact(elmFiles, artifactName, params, patients, vsacAp
   }
 
   // Ensure value sets, downloading any missing value sets
-  return codeService.ensureValueSets(valueSets, vsacApiKey)
-    .then(() => {
-      // Value sets are loaded, so execute!
-      const executor = new cql.Executor(library, codeService, cqlExecParams);
-      const results = executor.exec(patientSource);
-      return results;
-    });
+  return codeService.ensureValueSets(valueSets, vsacApiKey).then(() => {
+    // Value sets are loaded, so execute!
+    const executor = new cql.Executor(library, codeService, cqlExecParams);
+    const results = executor.exec(patientSource);
+    return results;
+  });
 }
 
 function convertParameters(params = []) {
   const paramsObj = {};
-  params.forEach((p) => {
+  params.forEach(p => {
     // Handle the null case first so we don't have to guard against it later
     if (p.value == null) {
       paramsObj[p.name] = null;
@@ -533,14 +545,20 @@ function convertParameters(params = []) {
         paramsObj[p.name] = new cql.Interval(p.value.firstInteger, p.value.secondInteger);
         break;
       case 'interval_of_quantity': {
-        const q1 = p.value.firstQuantity != null ? new cql.Quantity({
-          value: p.value.firstQuantity,
-          unit: p.value.unit
-        }) : null;
-        const q2 = p.value.secondQuantity != null ? new cql.Quantity({
-          value: p.value.secondQuantity,
-          unit: p.value.unit
-        }) : null;
+        const q1 =
+          p.value.firstQuantity != null
+            ? new cql.Quantity({
+                value: p.value.firstQuantity,
+                unit: p.value.unit
+              })
+            : null;
+        const q2 =
+          p.value.secondQuantity != null
+            ? new cql.Quantity({
+                value: p.value.secondQuantity,
+                unit: p.value.unit
+              })
+            : null;
         paramsObj[p.name] = new cql.Interval(q1, q2);
         break;
       }
@@ -574,29 +592,24 @@ export function executeCQLArtifact(artifact, params, patients, vsacApiKey, codeS
   artifact.dataModel = dataModel;
   const artifactName = `${slug(artifact.name ? artifact.name : 'untitled', { lower: false })}`;
 
-  return (dispatch) => {
+  return dispatch => {
     dispatch(requestExecuteArtifact());
 
     return new Promise((resolve, reject) => {
       sendValidateArtifactRequest(artifact)
-        .then((res) => {
+        .then(res => {
           dispatch(validateArtifactSuccess(res.data));
           resolve(res);
         })
-        .catch((error) => {
+        .catch(error => {
           dispatch(validateArtifactFailure(error));
           dispatch(executeArtifactFailure(error));
           reject();
         });
-    }).then(res => performExecuteArtifact(
-      res.data.elmFiles,
-      artifactName,
-      params,
-      patients,
-      vsacApiKey,
-      codeService,
-      dataModel
-    ))
+    })
+      .then(res =>
+        performExecuteArtifact(res.data.elmFiles, artifactName, params, patients, vsacApiKey, codeService, dataModel)
+      )
       .then(r => dispatch(executeArtifactSuccess(r, artifact, patients)))
       .catch(error => dispatch(executeArtifactFailure(error)));
   };
@@ -628,15 +641,14 @@ function saveArtifactFailure(error) {
 function sendSaveArtifactRequest(artifact) {
   if (artifact._id == null) {
     const artifactWithoutId = _.omit(artifact, ['_id']);
-    return axios.post(`${API_BASE}/artifacts`, artifactWithoutId)
-      .then(result => result.data);
+    return axios.post(`${API_BASE}/artifacts`, artifactWithoutId).then(result => result.data);
   }
 
   return axios.put(`${API_BASE}/artifacts`, artifact).then(() => artifact);
 }
 
 export function saveArtifact(artifact) {
-  return (dispatch) => {
+  return dispatch => {
     dispatch(requestSaveArtifact());
 
     return sendSaveArtifactRequest(artifact)
