@@ -100,6 +100,109 @@ const emptyInstanceTree = {
   childInstances: []
 };
 
+const simpleObservationInstanceTree = {
+  id: 'And',
+  name: 'And',
+  conjunction: true,
+  returnType: 'boolean',
+  path: '',
+  uniqueId: 'And-65',
+  fields: [
+    { id: 'element_name', type: 'string', name: 'Group Name', value: 'MeetsInclusionCriteria' },
+    { id: 'comment', type: 'textarea', name: 'Comment', value: 'Includes a comment'}
+  ],
+  childInstances: [
+    {
+      id: 'GenericObservation_vsac',
+      name: 'Observation',
+      returnType: 'list_of_observations',
+      suppress: true,
+      extends: 'Base',
+      template: 'GenericObservation',
+      suppressedModifiers: ['ConvertToMgPerdL'],
+      fields: [
+        {
+          id: 'element_name',
+          type: 'string',
+          name: 'Element Name',
+          value: 'LDL Cholesterol'
+        },
+        {
+          id: 'comment',
+          type: 'textarea',
+          name: 'Comment'
+        },
+        {
+          id: 'observation',
+          type: 'observation_vsac',
+          name: 'Observation',
+          valueSets: [
+            {
+              name: 'LDL Cholesterol',
+              oid: '2.16.840.1.113883.3.526.3.1573'
+            }
+          ],
+          static: true
+        }
+      ],
+      type: 'element',
+      uniqueId: 'GenericObservation_vsac-23',
+      modifiers: []
+    }
+  ]
+};
+
+const simpleConditionInstanceTree = {
+  id: "And",
+  name: "And",
+  conjunction: true,
+  returnType: "boolean",
+  path: '',
+  uniqueId: "And-34",
+  fields: [
+      { id: "element_name", type: "string", name: "Group Name", value: "MeetsInclusionCriteria" },
+      { id: "comment", type: "textarea", name: "Comment", value: 'Includes a comment'}
+  ],
+  childInstances: [
+      {
+          id: "GenericCondition_vsac",
+          name: "Condition",
+          returnType: "list_of_conditions",
+          suppress: true,
+          extends: "Base",
+          template: "GenericCondition",
+          fields: [
+              {
+                  id: "element_name",
+                  type: "string",
+                  name: "Element Name",
+                  value: "All Infections"
+              },
+              {
+                  id: "comment",
+                  type: "textarea",
+                  name: "Comment"
+              },
+              {
+                  id: "condition",
+                  type: "condition_vsac",
+                  name: "Condition",
+                  valueSets: [
+                      {
+                          name: "All Infections",
+                          oid: "2.16.840.1.113762.1.4.1200.143"
+                      }
+                  ],
+                  static: true
+              }
+          ],
+          type: "element",
+          uniqueId: "GenericCondition_vsac-23",
+          modifiers: []
+      }
+  ]
+};
+
 const elementGroups = [
   {
     id: 0,
@@ -586,6 +689,8 @@ export { default as artifact } from '../mocks/mockArtifact';
 export {
   instanceTree,
   emptyInstanceTree,
+  simpleObservationInstanceTree,
+  simpleConditionInstanceTree,
   elementGroups,
   genericElementTypes,
   genericElementGroups,
