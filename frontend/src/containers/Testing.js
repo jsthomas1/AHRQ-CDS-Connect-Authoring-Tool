@@ -35,20 +35,22 @@ class Testing extends Component {
     };
   }
 
-  UNSAFE_componentWillMount() { // eslint-disable-line camelcase
+  UNSAFE_componentWillMount() {
+    // eslint-disable-line camelcase
     this.props.loadPatients();
     this.props.loadArtifacts();
   }
 
-  UNSAFE_componentWillReceiveProps(newProps) { // eslint-disable-line camelcase
+  UNSAFE_componentWillReceiveProps(newProps) {
+    // eslint-disable-line camelcase
     this.setState({
-      showELMErrorModal: (newProps.executeStatus != null) && (newProps.downloadedArtifact.elmErrors.length > 0)
+      showELMErrorModal: newProps.executeStatus != null && newProps.downloadedArtifact.elmErrors.length > 0
     });
   }
 
-  addPatient = (patient) => {
+  addPatient = patient => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       this.setState({ patientData: JSON.parse(e.target.result) });
       const patientDataResourceType = _.get(this.state.patientData, 'resourceType');
       const patientResource = _.chain(this.state.patientData)
@@ -58,9 +60,11 @@ class Testing extends Component {
         .value();
 
       // Check for FHIR Bundle containing FHIR Patient
-      if ((patientDataResourceType === 'Bundle') && (patientResource)) { // Check for FHIR Patient in Bundle
+      if (patientDataResourceType === 'Bundle' && patientResource) {
+        // Check for FHIR Patient in Bundle
         this.setState({ showPatientVersionModal: true });
-      } else { // No patient could be found
+      } else {
+        // No patient could be found
         this.setState({ uploadError: true });
       }
     };
@@ -70,31 +74,32 @@ class Testing extends Component {
     } catch (error) {
       this.setState({ uploadError: true });
     }
-  }
+  };
 
   closePatientVersionModal = () => {
     this.setState({ showPatientVersionModal: false });
-  }
+  };
 
   showELMErrorModal = () => {
     this.setState({ showELMErrorModal: true });
-  }
+  };
 
   closeELMErrorModal = () => {
     this.setState({ showELMErrorModal: false });
     this.props.clearExecutionResults();
     this.props.clearArtifactValidationWarnings();
-  }
+  };
 
   selectVersion = patientVersion => {
     this.props.addPatient(this.state.patientData, patientVersion);
     this.closePatientVersionModal();
-  }
+  };
 
   renderResults = () => {
     const { results, artifactExecuted, patientsExecuted, isExecuting } = this.props;
 
     if (results) {
+      console.log(results);
       const resultsArray = Object.values(results.patientResults);
       const resultsCount = resultsArray.length;
       const resultsIncludedCount = resultsArray.filter(r => r.MeetsInclusionCriteria).length;
@@ -111,27 +116,29 @@ class Testing extends Component {
 
           <div className="patient-table__meta">
             <div className="meta-label">Meets Inclusion Criteria:</div>
-            <div>{resultsIncludedCount} of {resultsCount} patients</div>
+            <div>
+              {resultsIncludedCount} of {resultsCount} patients
+            </div>
           </div>
 
           <div className="patient-table__meta">
             <div className="meta-label">Meets Exclusion Criteria:</div>
-            <div>{resultsExcludedCount} of {resultsCount} patients</div>
+            <div>
+              {resultsExcludedCount} of {resultsCount} patients
+            </div>
           </div>
 
-          <div className="patients__table">
-            {patientsExecuted.map(p => this.renderResultsDataSection(p))}
-          </div>
+          <div className="patients__table">{patientsExecuted.map(p => this.renderResultsDataSection(p))}</div>
         </Jumbotron>
       );
     } else if (isExecuting) {
-      return <div className="execution-loading"><FontAwesomeIcon icon={faSpinner} spin size="4x" /></div>;
-    } else if (!Boolean(this.props.vsacApiKey)) {
       return (
-        <Breadcrumb className="execution-message">
-          Log in to VSAC to execute CQL.
-        </Breadcrumb>
+        <div className="execution-loading">
+          <FontAwesomeIcon icon={faSpinner} spin size="4x" />
+        </div>
       );
+    } else if (!Boolean(this.props.vsacApiKey)) {
+      return <Breadcrumb className="execution-message">Log in to VSAC to execute CQL.</Breadcrumb>;
     }
 
     return (
@@ -140,9 +147,9 @@ class Testing extends Component {
         <div>Select one or more patients below and execute CQL.</div>
       </Breadcrumb>
     );
-  }
+  };
 
-  renderResultsDataSection = (patientExecuted) => {
+  renderResultsDataSection = patientExecuted => {
     const { results } = this.props;
     const patientResource = _.chain(patientExecuted)
       .get('entry')
@@ -155,13 +162,9 @@ class Testing extends Component {
     const patientResults = results.patientResults[patientId];
 
     return (
-      <ResultsDataSection
-        key={patientId}
-        title={`${patientNameGiven} ${patientNameFamily}`}
-        results={patientResults}
-      />
+      <ResultsDataSection key={patientId} title={`${patientNameGiven} ${patientNameFamily}`} results={patientResults} />
     );
-  }
+  };
 
   renderPatientsTable() {
     if (this.props.patients && this.props.patients.length > 0) {
@@ -182,7 +185,7 @@ class Testing extends Component {
   renderDropzoneIcon = () => {
     if (this.props.isAdding) return <FontAwesomeIcon icon={faSpinner} size="5x" spin />;
     return <FontAwesomeIcon icon={faCloudUploadAlt} size="5x" />;
-  }
+  };
 
   render() {
     const { downloadedArtifact } = this.props;
@@ -204,11 +207,11 @@ class Testing extends Component {
 
                   {this.renderDropzoneIcon()}
 
-                  {uploadError &&
+                  {uploadError && (
                     <div className="warning">
                       Invalid file type. Only valid JSON FHIR<sup>®</sup> Bundles are accepted.
                     </div>
-                  }
+                  )}
 
                   <p className="dropzone__instructions">
                     Drop a valid JSON FHIR<sup>®</sup> bundle containing a synthetic patient here, or click to browse.
@@ -228,16 +231,13 @@ class Testing extends Component {
             {this.renderPatientsTable()}
           </div>
 
-          {showELMErrorModal &&
+          {showELMErrorModal && (
             <ELMErrorModal handleCloseModal={this.closeELMErrorModal} errors={downloadedArtifact.elmErrors} />
-          }
+          )}
 
-          {showPatientVersionModal &&
-            <PatientVersionModal
-              handleCloseModal={this.closePatientVersionModal}
-              selectVersion={this.selectVersion}
-            />
-          }
+          {showPatientVersionModal && (
+            <PatientVersionModal handleCloseModal={this.closePatientVersionModal} selectVersion={this.selectVersion} />
+          )}
         </div>
       </div>
     );
@@ -263,15 +263,18 @@ Testing.propTypes = {
 
 // these props are used for dispatching actions
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({
-    addPatient,
-    clearArtifactValidationWarnings,
-    clearExecutionResults,
-    deletePatient,
-    executeCQLArtifact,
-    loadArtifacts,
-    loadPatients
-  }, dispatch);
+  return bindActionCreators(
+    {
+      addPatient,
+      clearArtifactValidationWarnings,
+      clearExecutionResults,
+      deletePatient,
+      executeCQLArtifact,
+      loadArtifacts,
+      loadPatients
+    },
+    dispatch
+  );
 }
 
 // these props come from the application's state when it is started
